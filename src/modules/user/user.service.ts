@@ -36,7 +36,7 @@ export class UserService {
       });
       if (usersFound.length == 0) {
         throw new Error("User was not found");
-      }
+      } 
       return usersFound;
   }
 
