@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from 'prisma/prisma-client'
 import { PrismaModule } from '../prisma/prisma.module';
 import { LoginUserDto, RegisterUserDto } from './dto';
@@ -12,8 +12,9 @@ export class UserService {
   constructor(private prisma: PrismaService) {}
 
   async create(userData: RegisterUserDto) {
-    if (!this.userExists(userData.name)) {
-      return 'User already exists!';
+    let userExists = await this.userExists(userData.name);
+    if (userExists == true) {
+      return 'User with provided name already exists!';
     } else {
       const hash = await argon.hash(userData.password);
       const user: User = await this.prisma.user.create({
@@ -28,18 +29,6 @@ export class UserService {
     }
   }
 
-  async findByName(name: string): Promise<User[]> {
-      let usersFound = await this.prisma.user.findMany({
-        where: {
-          name: name
-        }
-      });
-      if (usersFound.length == 0) {
-        throw new Error("User was not found");
-      } 
-      return usersFound;
-  }
-
   async findAll() {
     return await this.prisma.user.findMany();
   }
@@ -49,10 +38,22 @@ export class UserService {
   }
 
   async userExists(userName: string) {
-    if ((await this.findByName(userName)).length != 0) {
-      return false;
-    }
-    return true;
+      if ((await this.findByName(userName) == false)) {
+        return false;
+      }
+      return true;
   }
+
+  async findByName(name: string): Promise<User[] | false> {
+    let usersFound = await this.prisma.user.findMany({
+      where: {
+        name: name
+      }
+    });
+    if (usersFound.length == 0) {
+      return false;
+    } 
+    return usersFound;
+}
 
 }

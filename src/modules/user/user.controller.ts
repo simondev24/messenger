@@ -1,7 +1,9 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, Post, Req, Res } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Request } from '@nestjs/common';
 import { LoginUserDto, RegisterUserDto } from './dto';
+import { create } from 'domain';
+
 
 @Controller('user')
 export class UserController {
@@ -14,7 +16,6 @@ export class UserController {
 
     @Post('register')
     createUser(@Body() userData: RegisterUserDto) {
-        console.log(userData);
         return this.userService.create(userData);
     }
 
