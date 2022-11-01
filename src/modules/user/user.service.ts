@@ -3,12 +3,13 @@ import { User } from 'prisma/prisma-client'
 import { LoginUserDto, RegisterUserDto } from './dto';
 import * as argon from 'argon2';
 import { PrismaService } from '../prisma/prisma.service';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class UserService {
   private readonly users: User[];
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private authService: AuthService) {}
 
   async create(userData: RegisterUserDto) {
     if (await this.userExists(userData.name)) {
@@ -33,9 +34,9 @@ export class UserService {
 
   async login(loginData: LoginUserDto, authToken: string) {
     if (await this.userExists(loginData.name)) {
-        const authenticated = this.authenticate(loginData);
+        const authenticated = await this.authenticate(loginData);
         if (authenticated) {
-          
+          this.authService.createSession(loginData.name);
           return HttpStatus.CREATED;
         } else {
           return HttpStatus.UNAUTHORIZED;
