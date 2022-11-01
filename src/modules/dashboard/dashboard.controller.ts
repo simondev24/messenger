@@ -8,6 +8,11 @@ export class DashboardController {
 
     @Get('/')
     getAllUsers() {
+        
+    }
+
+    @Get('user')
+    getUserDashboard() {
         return this.dashboardService.getUserDashboard();
     }
 }

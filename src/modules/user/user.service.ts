@@ -4,7 +4,6 @@ import { LoginUserDto, RegisterUserDto } from './dto';
 import * as argon from 'argon2';
 import { PrismaService } from '../prisma/prisma.service';
 
-
 @Injectable()
 export class UserService {
   private readonly users: User[];
@@ -34,7 +33,13 @@ export class UserService {
 
   async login(loginData: LoginUserDto, authToken: string) {
     if (await this.userExists(loginData.name)) {
-        return this.authenticate(loginData);
+        const authenticated = this.authenticate(loginData);
+        if (authenticated) {
+          
+          return HttpStatus.CREATED;
+        } else {
+          return HttpStatus.UNAUTHORIZED;
+        }
     }
     throw new HttpException('User with provided name was not found!', 404);
   }
@@ -45,11 +50,11 @@ export class UserService {
         name: loginData.name, 
       },
       select: {
-        password: true  
+        password: true
       }
     });
     if (await argon.verify(hashPassword.map((obj) => obj.password)[0], loginData.password)) {
-      return HttpStatus.CREATED;
+      return true;
     }
       throw new HttpException("Password is incorrect", 400);
   }

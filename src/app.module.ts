@@ -2,13 +2,13 @@ import { Module, NestModule } from '@nestjs/common';
 import { UserModule } from './modules/user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PrismaModule } from './modules/prisma/prisma.module';
-import { Auth } from './middleware/auth';
-import { UserService } from './modules/user/user.service';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
     UserModule,
-    PrismaModule
+    PrismaModule,
+    DashboardModule
   ],
 })
 export class AppModule {

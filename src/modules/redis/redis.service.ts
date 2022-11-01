@@ -16,11 +16,13 @@ export class RedisService {
     }
 
     async connectRedis() {
-        try {
-            await this.redisClient.connect();
-            console.log('Redis client connected');
-        } catch (err: any) {
-            console.log(err.message);
+        if (!this.redisClient.connected) {
+            try {
+                await this.redisClient.connect();
+                console.log('Redis client connected');
+            } catch (err: any) {
+                console.log(err.message);
+            }
         }
     };
 
