@@ -6,4 +6,8 @@ import { DashboardService } from './dashboard.service';
 export class DashboardController {
     constructor(private dashboardService: DashboardService) {}
 
+    @Get('/')
+    getAllUsers() {
+        return this.dashboardService.getUserDashboard();
+    }
 }

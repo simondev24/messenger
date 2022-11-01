@@ -1,8 +1,7 @@
-import { Body, Controller, Get, HttpException, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpException, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import { UserService } from './user.service';
-import { Request } from '@nestjs/common';
 import { LoginUserDto, RegisterUserDto } from './dto';
-import { create } from 'domain';
+import { Response, Request } from 'express';
 
 
 @Controller('user')
@@ -20,9 +19,9 @@ export class UserController {
     }
 
     @Post('login')
-    login(@Body() userData: LoginUserDto) {
-        console.log(userData);
-        return this.userService.login(userData);
+    login(@Body() userData: LoginUserDto, @Headers('auth-token') authToken) {
+        return this.userService.login(userData, authToken);
+
     }
 
 }

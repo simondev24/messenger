@@ -12,5 +12,19 @@ services:
       - '3309:3306'
     volumes:
       - db:/var/lib/mysql
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass redisroot
+    environment:
+      REDIS_HOST: cache
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redisroot
+    volumes: 
+      - cache:/data
 volumes:
   db:
+  cache:
+    driver: local
