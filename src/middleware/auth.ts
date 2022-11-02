@@ -17,7 +17,7 @@ export class AuthMiddleware implements NestMiddleware {
         res.end()
         return
       }
-      console.log("Auth middleware works!");
+      console.log("User is validated!");
       next();
   }
 
