@@ -32,12 +32,14 @@ export class UserService {
     return await this.prisma.user.findMany();
   }
 
-  async login(loginData: LoginUserDto, authToken: string) {
+  async login(loginData: LoginUserDto, sessionToken: string) {
     if (await this.userExists(loginData.name)) {
         const authenticated = await this.authenticate(loginData);
         if (authenticated) {
-          this.authService.createSession(loginData.name);
-          return HttpStatus.CREATED;
+          if (await this.authService.sessionExists(sessionToken)) {
+            return {"message": "Already logged in!"};
+          }
+          return {"auth-token": await this.authService.createSession(loginData.name)};
         } else {
           return HttpStatus.UNAUTHORIZED;
         }

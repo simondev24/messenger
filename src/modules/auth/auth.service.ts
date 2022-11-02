@@ -8,7 +8,7 @@ export class AuthService {
 
   constructor(private redisService: RedisService) {}
 
-  async createSession(login: string) {
+  async createSession(login: string): Promise<string> {
     /*const privateKey = Buffer.from(
       <string>process.env.PRIVATE_KEY,
       'base64'
@@ -25,6 +25,7 @@ export class AuthService {
       }
     );
     this.redisService.setPair(token, login);
+    return token;
   };
 
   async validateSession(token: string) {
@@ -40,7 +41,7 @@ export class AuthService {
   async sessionExists(token: string) {
     const value = await this.redisService.redisClient.get(token);
     if (value) {
-      return true;  
+      return true;
     }
     return false;
   }
