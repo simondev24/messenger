@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { RedisService } from '../redis/redis.service';
+import { LoginUserDto } from '../user/dto';
 const jwt = require("jsonwebtoken");
 require('dotenv').config();
 
@@ -8,15 +9,14 @@ export class AuthService {
 
   constructor(private redisService: RedisService) {}
 
-  async createSession(login: string): Promise<string> {
-    /*const privateKey = Buffer.from(
-      <string>process.env.PRIVATE_KEY,
-      'base64'
-    ).toString('ascii');*/
+  async createSession(loginData: LoginUserDto, userId): Promise<string> {
+    let login: string = loginData.name;
+    let password: string = loginData.password;
 
     let token = await jwt.sign(
       {
-        login
+        login,
+        password
       },
       process.env.PRIVATE_KEY,
       {

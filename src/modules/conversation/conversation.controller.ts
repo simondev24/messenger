@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, Post, Req, Res, Headers } from '@nestjs/common';
 import { ConversationService } from './conversation.service';
 
 
@@ -12,7 +12,7 @@ export class ConversationController {
     }
 
     @Get('all')
-    getUserConversations(@Body() userId: number) {
-        return this.conversationService.getUserConversations(userId);
+    getUserConversations(@Headers('auth-token') authToken) {
+        return this.conversationService.getUserConversations(authToken);
     }
 }

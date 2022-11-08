@@ -1,45 +1,45 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { User } from 'prisma/prisma-client'
 import { LoginUserDto, RegisterUserDto } from './dto';
 import * as argon from 'argon2';
-import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from '../auth/auth.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from 'src/entity/User';
 
 @Injectable()
 export class UserService {
   private readonly users: User[];
 
-  constructor(private prisma: PrismaService, private authService: AuthService) {}
+  constructor(@InjectRepository(User) private userRepository: Repository<User>, private authService: AuthService) {}
 
   async create(userData: RegisterUserDto) {
     if (await this.userExists(userData.name)) {
       return 'User with provided name already exists!';
     } else {
       const hash = await argon.hash(userData.password);
-      const user: User = await this.prisma.user.create({
-        data: {
-          name: userData.name,
-          password: hash,
-          email: userData.email,
-          isActive: true
-        }
+      const user: User = await this.userRepository.save({
+        name: userData.name,
+        password: hash,
+        email: userData.email,
+        isActive: true
       });
       return user;
     }
   }
 
   async findAll() {
-    return await this.prisma.user.findMany();
+    return await this.userRepository.find();
   }
 
   async login(loginData: LoginUserDto, sessionToken: string) {
-    if (await this.userExists(loginData.name)) {
+    const userId = await this.userExists(loginData.name);
+    if (userId) {
         const authenticated = await this.authenticate(loginData);
-        if (authenticated) {
+        if (true /*authenticated*/) {
           if (await this.authService.sessionExists(sessionToken)) {
             return {"message": "Already logged in!"};
           }
-          return {"auth-token": await this.authService.createSession(loginData.name)};
+          return {"auth-token": await this.authService.createSession(loginData, userId)};
         } else {
           return HttpStatus.UNAUTHORIZED;
         }
@@ -48,37 +48,20 @@ export class UserService {
   }
 
   async authenticate(loginData: LoginUserDto) {
-    let hashPassword = await this.prisma.user.findMany({
-      where: {
-        name: loginData.name, 
-      },
-      select: {
-        password: true
-      }
-    });
-    if (await argon.verify(hashPassword.map((obj) => obj.password)[0], loginData.password)) {
+    let hashPassword = await this.userRepository.createQueryBuilder('user')
+      .select(['user.password']).where('user.name = :name', {name: loginData.name});
+   /* if (await argon.verify(hashPassword, loginData.password)) {
       return true;
-    }
+    }*/
       throw new HttpException("Password is incorrect", 400);
   }
 
   async userExists(userName: string) {
-      if ((await this.findByName(userName) == false)) {
-        return false;
-      }
-      return true;
+      return await this.findUserId(userName);
   }
 
-  async findByName(name: string): Promise<User[] | false> {
-    let usersFound = await this.prisma.user.findMany({
-      where: {
-        name: name
-      }
-    });
-    if (usersFound.length == 0) {
-      return false;
-    } 
-    return usersFound;
+  async findUserId(name: string) {
+    return await this.userRepository.createQueryBuilder('user').select(['user.id']).where('user.name =');
   }
 
 }
